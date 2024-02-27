@@ -25,22 +25,24 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - "db=server=db;user id=lurisdatabasehomework;database=postgres;password=P@ssword;"
     healthcheck:
-      test: wget --tries=1 http://localhost/healthCheck || exit 1
+      test: wget --tries=1 http://localhost:2607/healthCheck || exit 1
       interval: 3s
       retries: 2
       start_period: 5s
       timeout: 15s
       #####
+
+
   black-box:
   # https://github.com/prometheus/blackbox_exporter/releases
     image: prom/blackbox-exporter:v0.23.0
     container_name: blackbox
     restart: unless-stopped
     ports: 
-    - "2608:2608"
-    volumnes:
-    - ../blackbox/blackbox.yml:/ect/blackbox/blackbox.yml
-    command: --config.file=/ect/blackbox/blackbox.ymal
+    - "2608:9115"
+    volumes:
+        - ../blackbox/blackbox.yml:/etc/blackbox/blackbox.yml
+    command: --config.file=/etc/blackbox/blackbox.yml
     depends_on:
       - server
 
@@ -51,11 +53,11 @@ services:
     hostname: prometheus
     restart: unless-stopped
     ports:
-     - "2609:2609"
+     - "2609:9090"
     volumes:
       - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
-      - blackbox
+      - black-box
 
   grafana:
     # https://github.com/grafana/grafana/releases
@@ -66,11 +68,11 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
-      - grafana-data:/var/lib/grafana
+      #- #grafana-data:/var/lib/grafana
       - ../grafana/provisioning:/etc/grafana/provisioning
     restart: unless-stopped
     user: root
     ports:
-      - "2610:2610"
+      - "2610:3000"
     depends_on:
       - prometheus

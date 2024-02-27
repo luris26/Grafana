@@ -5,6 +5,8 @@ using TicketsRUs.ClassLib.Data;
 using TicketsRUs.WebApp.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContextFactory<PostgresContext>(options => options.UseNpgsql("Name=db"));
 
+builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,22 +35,22 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.MapGet("/healthCheck", () =>
-{
-    if (DateTime.Now.Second % 10 < 5)
-    {
-        return "healthy";
-    }
-
-    return "unhealthy";
-});
-
 // Swagger Components
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
 
 app.UseHttpsRedirection();
+app.MapHealthChecks("/healthCheck", new HealthCheckOptions
+{
+    AllowCachingResponses = false,
+    ResultStatusCodes =
+                {
+                    [HealthStatus.Healthy] = StatusCodes.Status200OK,
+                    [HealthStatus.Degraded] = StatusCodes.Status200OK,
+                    [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+                }
+});
 
 app.UseStaticFiles();
 app.UseAntiforgery();

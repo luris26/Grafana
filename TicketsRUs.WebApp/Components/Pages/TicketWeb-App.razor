@@ -1,0 +1,46 @@
+﻿@page "/ticket"
+@inject ITicketService service
+@rendermode InteractiveServer
+
+<PageTitle>Tickets</PageTitle>
+
+<h3>TicketWeb_App</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">EventId</th>
+            <th scope="col">Start-Time</th>
+            <th scope="col">Scanned</th>
+            <th scope="col">Identifier</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Ticket t in tickets)
+        {
+            <tr>
+                <th scope="row">@t.EventId</th>
+                <th scope="row">@t.Event.StartTime</th>
+                <th scope="row">@t.Scanned</th>
+                <th scope="row">@t.Identifier</th>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+@code {
+    List<Ticket> tickets = new();
+    List<AvailableEvent> events = new();
+    ApiTicketController controller;
+
+    protected override async Task OnInitializedAsync()
+    {
+        controller = new(service);
+
+        tickets = (await controller.GetAllTickets()).OrderBy(t => t.EventId).ToList();
+        events = (await controller.GetAllAvailableEvents()).ToList();
+
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,61 @@
+@page "/"
+@using TicketsRUs.ClassLib.Data
+@using TicketsRUs.ClassLib.Services
+@using TicketsRUs.Maui.Controllers
+@inject ITicketService _service
+@inject NavigationManager nav
+
+<h1>Scan Test</h1>
+
+<h3>TicketWeb_App</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">EventId</th>
+            <th scope="col">EventName</th>
+            <th scope="col">Start-Time</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+        <tbody>
+            @foreach (var ev in events)
+            {
+                <tr>
+                    <th scope="row">@ev.Id</th>
+                    <th scope="row">@ev.Name</th>
+                    <th scope="row">@ev.StartTime</th>
+                    <td>
+                        <button @onclick="() => HandleEvent(ev.Id)" class="btn btn-primary">Buy</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@* Scan Result: @scanner.ScanResult
+
+@if (scanner.SuccessfulScan)
+{
+    <p class="bg-success">Success!</p>
+} *@
+
+@code
+{
+    List<AvailableEvent> events = new();
+    Sync sync;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = (await _service.GetAllAvailableEvents()).ToList();
+        sync = new(_service);
+        await sync.Start();
+    }
+
+    public async Task HandleEvent(int eventId)
+    {
+        nav.NavigateTo($"/scan/{eventId}");
+    }
+ 
+}

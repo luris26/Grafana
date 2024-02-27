@@ -1,0 +1,31 @@
+@page "/settings"
+
+<h1>Settings</h1>
+
+<select class="form-select m-3 p-3" aria-label="Sync Frequency" @onchange="ChangeSyncFrequency">
+    <option value="thirtySecs">30 Seconds</option>
+    <option value="oneMin">1 minute</option>
+    <option value="fiveMins">5 minutes</option>
+</select>
+
+<select class="form-select m-3 p-3" aria-label="API URL" @bind="@selectedApiUrl">
+    <option value="https://luris-garion-ticketsrus.postgres.database.azure.com">Primary</option>
+</select>
+
+<p>@selected</p>
+
+@code {
+    string selected = "";
+
+    string selectedApiUrl = "https://luris-garion-ticketsrus.postgres.database.azure.com";
+
+    public void ChangeSyncFrequency(ChangeEventArgs args)
+    {
+        selected = args.Value.ToString();
+    }
+
+    public void ChangeAPIUrl(ChangeEventArgs args)
+    {
+        selectedApiUrl = args.Value.ToString();
+    }
+}

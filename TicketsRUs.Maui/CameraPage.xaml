@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TicketsRUs.Maui.CameraPage"
+             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+             Title="Scan">
+    
+    <VerticalStackLayout>
+        <Label             
+            Text="Scanner"            
+            VerticalOptions="Center"             
+            HorizontalOptions="Center" />
+        
+        <zxing:CameraBarcodeReaderView              
+            x:Name="barcodeReader"             
+            BarcodesDetected="barcodeReader_BarcodesDetected" />
+        
+        <!--<Button Text="Stop Scanning" FontSize="Large" Clicked="EndScan"></Button>-->
+        
+    </VerticalStackLayout>
+</ContentPage>

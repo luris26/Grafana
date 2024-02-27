@@ -1,0 +1,11 @@
+.github
+.vs
+TicketsRUs.Maui
+TicketsRUs.Tests
+.dockerignore
+.gitignore
+README.md
+
+bin
+obj
+imgs

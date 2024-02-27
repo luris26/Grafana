@@ -1,0 +1,122 @@
+﻿@page "/purchase/{Event_Id}"
+@using TicketsRUs.WebApp
+@using System.Drawing
+@using System.Drawing.Imaging;
+@inject ITicketService service
+@inject IEmailService _emailservice
+@rendermode InteractiveServer
+
+<PageTitle>Purchase</PageTitle>
+
+<h1>Purchase Ticket</h1>
+
+@if (dataIsLoaded)
+{
+    @if (selected_event == null)
+    {
+        <p class="p-3 mb-2 bg-danger text-white">Selected event does not exist</p>
+    }
+    else
+    {
+        <div class="form-group">
+            <input type="email" class="form-control" placeholder="Enter email" @bind="email">
+            <small id="emailHelp" class="form-text text-muted">For Event: @Event_Id</small>
+        </div>
+
+        <button class="p-3 mb-2 btn btn-success" @onclick="Purchase">Purchase Ticket </button>
+    }
+}
+
+@if (isError)
+{
+    <p class="p-3 mb-2 bg-danger text-white">@errorString</p>
+}
+
+@if (success)
+{
+    <p class="p-3 mb-2 bg-success text-white">Successfully purchased ticket for @Event_Id</p>
+}
+
+@if (qrCode != null)
+{
+    <img src="@qrCode" />
+}
+
+@code {
+    [Parameter]
+    public string Event_Id { get; set; }
+
+    ApiTicketController controller;
+    AvailableEvent? selected_event = null;
+    string email = "";
+    string? qrCode;
+
+    bool dataIsLoaded = false;
+    bool success = false;
+
+    bool isError = false;
+    string errorString = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Convert.ToInt32(Event_Id);
+        }
+        catch (Exception e)
+        {
+            isError = true;
+            return;
+        }
+
+        controller = new(service);
+        selected_event = await controller.GetAvailableEvent(Convert.ToInt32(Event_Id));
+        dataIsLoaded = true;
+    }
+
+    async Task Purchase()
+    {
+        success = false;
+        isError = false;
+        errorString = "";
+
+        if (!IsValidEmail())
+        {
+            isError = true;
+            errorString = "Invalid Email";
+            StateHasChanged();
+            return;
+        }
+
+        Ticket t = await controller.CreateTicket(Convert.ToInt32(Event_Id));
+        GenerateQrFor(t);
+
+        await _emailservice.SendEmailAsync(email, t.Identifier);
+
+        email = "";
+        success = true;
+        StateHasChanged();
+    }
+
+    private bool IsValidEmail()
+    {
+        return (email.Contains("@") && email.Contains("."));
+    }
+
+    private void GenerateQrFor(Ticket t)
+    {
+        Bitmap qr = QRCodeToolkit.GenerateQRCodeFromString(t.Identifier);
+        byte[] qrCodeArr = QRCodeToolkit.ConvertToByteArray(qr);
+        SaveToPng(qrCodeArr, t.Identifier);
+        qrCode = $"data:image;base64,{Convert.ToBase64String(qrCodeArr)}";
+    }
+
+    private void SaveToPng(byte[] arr, string id)
+    {
+        using (Image image = Image.FromStream(new MemoryStream(arr)))
+        {
+            image.Save($"imgs/{id}.png", ImageFormat.Png);
+        }
+    }
+}

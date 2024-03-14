@@ -11,6 +11,8 @@ exporters:
     endpoint: tempo:4007
     tls:
       insecure: true
+  zipkin:
+     endpoint:  http://zipkin:9411/api/v2/spans
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
     tls:
@@ -20,6 +22,7 @@ extensions:
   health_check:
   zpages:
      endpoint: otel:55679
+  
 
 processors:
   # Data sources: traces, metrics, logs
@@ -34,7 +37,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [zipkin]
     logs:
       receivers: [otlp]
       processors: [batch]

@@ -115,6 +115,15 @@ services:
     networks:
       otel:
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
+    restart: unless-stopped
+
+
+
 networks:
   otel:
 

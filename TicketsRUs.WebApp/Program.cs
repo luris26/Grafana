@@ -1,14 +1,17 @@
 using TicketsRUs.ClassLib.Data;
 using TicketsRUs.ClassLib.Services;
 using TicketsRUs.WebApp.Components;
-using TicketsRUs.ClassLib.Data;
 using TicketsRUs.WebApp.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +48,15 @@ builder.Logging.AddOpenTelemetry(options =>
             opt.Endpoint = new Uri("http://otel-collector:4317/");
         });
 });
+
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(trace =>
+        trace.AddSource(DiagnosticsTrace.SourceName)
+        .AddOtlpExporter(end =>{
+            end.Endpoint = new Uri("http://otel-collector:4317/");
+        })
+        .AddAspNetCoreInstrumentation());
 
 
 // Configure the HTTP request pipeline.

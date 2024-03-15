@@ -1,7 +1,26 @@
-﻿@page "/"
+﻿@page "/counter"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Counter</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Counter</h1>
 
-Welcome to your new app.
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="DecreaseCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        using var myActivuty = DiagnosticsTrace.ActionSource.StartActivity("add counter for activity 1");
+        currentCount++;
+    }
+
+     private void DecreaseCount()
+    {
+        using var myActivuty = DiagnosticsTrace.ActionSource2.StartActivity("add counter for activity 2");
+        currentCount--;
+    }
+}

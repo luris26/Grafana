@@ -120,8 +120,9 @@ services:
     container_name: zipkin
     ports:
       - 9411:9411
-    restart: unless-stopped
-
+    restart: always
+    networks:
+      otel:
 
 
 networks:

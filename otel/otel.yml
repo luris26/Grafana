@@ -6,7 +6,7 @@ receivers:
 
 exporters:
   prometheus:
-    endpoint: otel:8889
+    endpoint: "0.0..0.0:1234"
   otlp:
     endpoint: tempo:4007
     tls:
@@ -44,4 +44,3 @@ service:
       exporters: [loki]
 
 
-      

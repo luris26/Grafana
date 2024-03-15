@@ -8,11 +8,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry;
-using System.Diagnostics;
 using OpenTelemetry.Metrics;
+using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,30 +27,42 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContextFactory<PostgresContext>(options => options.UseNpgsql("Name=db"));
 
+
+const string serviceName = "luris";
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(serviceName))
+    .WithTracing(tracing => tracing
+    .AddAspNetCoreInstrumentation()
+    .AddSource(DiagnosticsTrace.SourceName)
+    .AddSource(DiagnosticsTrace.SourceName2)
+    .AddConsoleExporter()
+    .AddOtlpExporter(o =>
+    {
+        o.Endpoint = new Uri("http://otel-collector:4317/");
+    })
+    )
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddMeter(Meters.myhomeworkmeter.Name)
+        .AddConsoleExporter()
+        .AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://otel-collector:4317/");
+        }
+        )
+    );
+
+
+
 builder.Services.AddHealthChecks();
 var app = builder.Build();
 
-const string serviceName ="luris";
 
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource( r => r.AddService(serviceName))
-    .WithTracing(trace =>
-        trace.AddSource(DiagnosticsTrace.SourceName)
-        .AddOtlpExporter(end =>{
-            end.Endpoint = new Uri("http://otel-collector:4317/");
-        })
-        .AddAspNetCoreInstrumentation())
-        .WithMetrics( metric =>
-        metric.AddMeter("LurisHomework.DemoTicket")
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://otel-collector:4317/");
-        }).AddPrometheusExporter()
-        .AddAspNetCoreInstrumentation());
 
-x
-// Configure the HTTP request pipeline.
+
+//Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

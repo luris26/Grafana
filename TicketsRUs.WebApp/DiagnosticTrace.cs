@@ -1,4 +1,4 @@
 public class DiagnosticsTrace
 {
-    public static readonly string SourceName = "luris_tracexd";
+    public static string SourceName = "luris_tracexd";
 }

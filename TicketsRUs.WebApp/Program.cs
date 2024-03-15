@@ -12,6 +12,7 @@ using OpenTelemetry.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using System.Diagnostics;
+using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,30 +36,23 @@ var app = builder.Build();
 const string serviceName ="luris";
 
 
-builder.Logging.AddOpenTelemetry(options =>
-{
-    options
-        .SetResourceBuilder(
-            ResourceBuilder
-                .CreateDefault()
-                .AddService(serviceName)
-                )
-        .AddOtlpExporter(opt =>
-        {
-            opt.Endpoint = new Uri("http://otel-collector:4317/");
-        });
-});
-
-
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource( r => r.AddService(serviceName))
     .WithTracing(trace =>
         trace.AddSource(DiagnosticsTrace.SourceName)
         .AddOtlpExporter(end =>{
             end.Endpoint = new Uri("http://otel-collector:4317/");
         })
+        .AddAspNetCoreInstrumentation())
+        .WithMetrics( metric =>
+        metric.AddMeter("LurisHomework.DemoTicket")
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://otel-collector:4317/");
+        }).AddPrometheusExporter()
         .AddAspNetCoreInstrumentation());
 
-
+x
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

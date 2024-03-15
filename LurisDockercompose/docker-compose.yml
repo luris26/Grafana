@@ -27,16 +27,14 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - "db=server=db;user id=lurisdatabasehomework;database=postgres;password=P@ssword;"
     healthcheck:
-      test: wget --tries=1 http://localhost:2607/healthCheck || exit 1
+      test: curl --fail http://localhost:2607/healthCheck || exit 1
       interval: 3s
       retries: 2
       start_period: 5s
       timeout: 15s
     networks:
-      otel:
+      - otel
   
-      #####
-
 
   black-box:
   # https://github.com/prometheus/blackbox_exporter/releases
